@@ -8,7 +8,6 @@ import { Chart as ChartJS } from "chart.js/auto";
 
 const App = () => {
   const [stateData, setSateData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [dateFiltersData, setDateFiltersData] = useState([]);
   const [dateWiseChartData, setDateWiseChart] = useState({
@@ -31,10 +30,51 @@ const App = () => {
     ],
   });
 
+  const [selectedStoreName, setSelectedStoreName] = useState("fanjoy.co");
+
+  const [isDataLoading, setIsDataLoading] = useState(false);
+
+  const appendixDropdownData = [
+    "gymshark.com",
+    "bombas.com",
+    "fanjoy.co",
+    "boutique.louvre.fr",
+    "ca.ultamodan.com",
+    "colourpop.com",
+    "drsquatch.com",
+    "establishedtitles.com",
+    "morphe.com",
+    "eustore.ifixit.com",
+    "farmersmarket.chipotle.com",
+    "fentybeauty.com",
+    "flyingtiger.com",
+    "fr.cupshe.com",
+    "fr.roccat.com",
+    "hardware.shopify.com",
+    "hasbropulse.com",
+    "kbdfans.com",
+    "kith.com",
+    "knix.com",
+    "langehair.com",
+    "localstealsanddeals.com",
+    "modcloth.com",
+    "nft.casetify.com",
+    "ridge.com",
+    "ruggable.com",
+    "se-en.ring.com",
+    "shapermint.uk",
+    "shop.allkpop.com",
+    "shop.buzzfeed.com",
+    "shop.colgate.com",
+    "shop.hulu.com",
+    "shop.luvmehair.com",
+  ];
+
   const fethData = async () => {
     try {
+      setIsDataLoading(true);
       const response = await axios.get(
-        "https://fanjoy.co/products.json?page=5&limit=250"
+        `https://${selectedStoreName}/products.json?page=5&limit=250`
       );
       console.log("response", response.data.products);
 
@@ -47,7 +87,9 @@ const App = () => {
         };
       });
       setSateData(data);
+      setIsDataLoading(false);
     } catch (error) {
+      setIsDataLoading(false);
       alert("fetched fail");
       setSateData([]);
     }
@@ -55,7 +97,7 @@ const App = () => {
 
   useEffect(() => {
     fethData();
-  }, []);
+  }, [selectedStoreName]);
 
   const dateConvertor = (data) => {
     const dateCount = {};
@@ -185,38 +227,69 @@ const App = () => {
         </button>
       </div>
 
-      <div className="row">
-        <div className="col-md-5">
-          <Bar data={dateWiseChartData} />
-        </div>
+      <h5>Select Store Name</h5>
+      <select
+        class="form-select w-25"
+        aria-label="Default select example"
+        value={selectedStoreName}
+        onChange={(e) => {
+          setSelectedStoreName(e.target.value);
+        }}
+      >
+        {appendixDropdownData.map((item, index) => {
+          return (
+            <option value={item} key={index}>
+              {item}
+            </option>
+          );
+        })}
+      </select>
 
-        <div className="col-md-5 offset-md-2 ">
-          <Bar data={productWiseChartData} />
-        </div>
-      </div>
+      {stateData.length > 0 && (
+        <div className="row">
+          <div className="col-md-5">
+            <Bar data={dateWiseChartData} />
+          </div>
 
-      <table class="table table-striped   mt-2">
-        <thead>
-          <tr>
-            <th scope="col">Poduct Id</th>
-            <th scope="col">Created At</th>
-            <th scope="col">Type</th>
-            <th scope="col">Vendor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {stateData?.map((item, index) => {
-            return (
-              <tr>
-                <td>{item.id}</td>
-                <td>{item.created_at}</td>
-                <td>{item.product_type}</td>
-                <td>{item.vendor}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+          <div className="col-md-5 offset-md-2 ">
+            <Bar data={productWiseChartData} />
+          </div>
+        </div>
+      )}
+
+      {isDataLoading ? (
+        <h1 className="text-primaary">Data Loading...</h1>
+      ) : (
+        <table class="table table-striped   mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Poduct Id</th>
+              <th scope="col">Created At</th>
+              <th scope="col">Type</th>
+              <th scope="col">Vendor</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {stateData?.map((item, index) => {
+              return (
+                <tr>
+                  <td>{item.id}</td>
+                  <td>{item.created_at}</td>
+                  <td>{item.product_type}</td>
+                  <td>{item.vendor}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {stateData.length === 0 && !isDataLoading && (
+        <div className=" text-danger">
+          <h1 className="text-center">No Records Found</h1>
+        </div>
+      )}
     </div>
   );
 };
