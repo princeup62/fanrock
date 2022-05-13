@@ -74,7 +74,7 @@ const App = () => {
     try {
       setIsDataLoading(true);
       const response = await axios.get(
-        `https://${selectedStoreName}/products.json?page=5&limit=250`
+        `https://${selectedStoreName}/products.json?page=1&limit=250`
       );
       console.log("response", response.data.products);
 
